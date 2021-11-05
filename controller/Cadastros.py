@@ -1,21 +1,23 @@
 from ORM.usuario import User
 from ORM.ENV import *
+from controller.Senhas import *
 
 class ConUser():
     @classmethod
     def validate(cls, nome, email, senha):
         if len(nome) > 50 or len(nome) < 2:
             return 101
-        elif len(email) < 10 or len(email) > 100:
+        elif len(email) > 100:
             return 102
-        elif len(senha) < 6 or senha > 20:
+        elif len(senha) < 6 or len(senha) > 20:
             return 103
         else:
             return 0
     @classmethod
     def exists(cls, email):
-        session = connection()
-        if len(session.query(User).filter_by(email=email)) == 0:
+        aux = ConUser.search(email=email)
+        user = User(aux.id, aux.email, aux.name, aux.password)
+        if len(user) == 0:
             return 0
         else:
             return 104
@@ -33,27 +35,23 @@ class ConUser():
         return users
     @classmethod
     def add(cls, nome, email, senha):
-        if ConUser.validate(nome, email, senha) == 0 and ConUser.exists(email) == 0:
-            user = User(name=nome,
-                        email=email,
-                        password=senha)
-            session = connection()
-            session.add(user)
-            session.rollback()
-            session.commit()
+        print('função')
+        if ConUser.validate(nome, email, senha) == 0:
+            print('if')
+            if ConUser.exists(email) == 0:
+                print('to no if')
+                key = nome+email
+                senha = ConCrypt.encode(senha, key)
+                print('hash feita')
+                user = User(nome, email, senha)
+                print('usuario')
+                session = connection()
+                print('Conectado')
+                session.add(user)
+                print('add')
+                session.rollback()
+                session.commit()
+                print('Commit')
+                return 0
         else:
-            print('Não foi possivel cadastrar!')
-    @classmethod
-    def editPass(cls, id, nome, senhaAtual, senhaNova):
-        session = connection()
-        user = session.query(User).filter(User.id == id)
-        if len(user) != 0 and user.name == nome and user.password == senhaAtual:
-            user[0].senha = senhaNova
-            session.commit()
-            return 0
-        else:
-            return 301
-
-
-
-        
+            return 105
