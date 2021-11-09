@@ -10,8 +10,6 @@ CODE-                            DESCRIPTION
 
 104             -               E-mail já cadastrado.
 
-105             -               Não foi possivel cadastrar este usuário, tente novamente mais tarde!
-
         Login
 
 201             -               E-mail incorreto.

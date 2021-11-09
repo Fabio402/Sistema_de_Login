@@ -1,57 +1,50 @@
+import hashlib
+
 from ORM.usuario import User
 from ORM.ENV import *
-from controller.Senhas import *
 
 class ConUser():
     @classmethod
-    def validate(cls, nome, email, senha):
-        if len(nome) > 50 or len(nome) < 2:
+    def validate(cls, name, email, password):
+        if len(name) > 50 or len(name) < 2:
             return 101
         elif len(email) > 100:
             return 102
-        elif len(senha) < 6 or len(senha) > 20:
+        elif len(password) < 6 or len(password) > 20:
             return 103
         else:
             return 0
     @classmethod
     def exists(cls, email):
-        aux = ConUser.search(email=email)
-        user = User(aux.id, aux.email, aux.name, aux.password)
-        if len(user) == 0:
+        if len(ConUser.search(email=email)) == 0:
             return 0
         else:
             return 104
     @classmethod
     def search(cls, **kargs):
         session = connection()
-        users = session.query(User)
+        users = session.query(User).all()
         for key, value in kargs.items():
             if key == 'id':
-                users.filter(User.id == value)
+                users = list(filter(lambda user: user.id == value, users))
             if key == 'nome':
-                users = users.filter(User.name == value)
+                users = list(filter(lambda user: user.name == value, users))
             if key == 'email':
-                users = users.filter(User.email == value)
+                users = list(filter(lambda user: user.email == value, users))
         return users
+
     @classmethod
-    def add(cls, nome, email, senha):
-        print('função')
-        if ConUser.validate(nome, email, senha) == 0:
-            print('if')
-            if ConUser.exists(email) == 0:
-                print('to no if')
-                key = nome+email
-                senha = ConCrypt.encode(senha, key)
-                print('hash feita')
-                user = User(nome, email, senha)
-                print('usuario')
-                session = connection()
-                print('Conectado')
-                session.add(user)
-                print('add')
-                session.rollback()
-                session.commit()
-                print('Commit')
-                return 0
-        else:
-            return 105
+    def add(cls, nome: str, email: str, senha: str):
+        session = connection()
+        test = ConUser.validate(nome, email, senha)
+        if test != 0:
+            return test
+        test = ConUser.exists(email)
+        if test != 0:
+            return test
+        senha = hashlib.sha256(senha.encode()).hexdigest()
+        user = User(name=nome, email=email, password=senha)
+        session.add(user)
+        session.commit()
+        session.rollback()
+        return 0

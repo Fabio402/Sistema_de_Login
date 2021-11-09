@@ -1,5 +1,4 @@
 from controller.Cadastros import *
-from controller.Senhas import *
 from ORM.usuario import *
 class Login():
     @classmethod
@@ -8,8 +7,7 @@ class Login():
             pessoas = ConUser.search(email=email)
             if len(pessoas) == 1:
                 pessoa = pessoas[0]
-                key = pessoa.nome+pessoa.email
-                if ConCrypt.decode(pessoa.password, key) == password:
+                if hashlib.sha256(password.encode()).hexdigest() == pessoa.password:
                     return pessoa
                 else:
                     return 202
@@ -20,11 +18,11 @@ class Login():
     @classmethod
     def alter(cls, pessoa: User,senha, novaSenha):
         try:
-            if ConCrypt.encode(senha) == pessoa.password:
+            if hashlib.sha256(senha.encode()).hexdigest() == pessoa.password:
                 session = connection()
                 user = session.query(User).filter(User.id == pessoa.id).all()
-                key = pessoa.nome+pessoa.email
-                user[0].senha = ConCrypt.encode(novaSenha, key)
+                user[0].password = hashlib.sha256(novaSenha.encode()).hexdigest()
+
                 session.commit()
                 return 0
             else:

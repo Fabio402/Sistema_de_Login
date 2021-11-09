@@ -1,21 +1,24 @@
-from ORM import usuario
 from controller.Login import *
 from controller.Cadastros import *
 def login():
-    email = input('E-mail: ')
+    email = input('E-mail: ').lower()
     senha = input('Senha: ')
     ans = Login.check(email, senha)
-    if type(ans) == object:
-        print(f'Olá {ans.nome}, bem vindo!')
+    if isinstance(ans, User):
+        print(f'Olá {ans.name}, bem vindo!')
         while True:
-            op = input('1- Alterar sua senha'
-                       '0- Sair')
+            op = int(input('1- Alterar sua senha\n'
+                       '0- Sair'))
             if op == 1:
                 senha = input('Senha atual: ')
                 novaSenha = input('Nova senha: ')
                 novaSenha2 = input('Digite a nova senha mais uma vez: ')
                 if novaSenha == novaSenha2:
-                    Login.alter(ans, senha, novaSenha)
+                    ans = Login.alter(ans, senha, novaSenha)
+                    if ans == 0:
+                        print('Senha alterada')
+                    else:
+                        print(f'Erro {ans}')
             elif op == 0:
                 break
             else:
@@ -25,7 +28,7 @@ def login():
 
 def cadastrar():
     nome = input('Nome: ')
-    email = input('E-mail: ')
+    email = input('E-mail: ').lower()
     senha = input('Senha: ')
     ans = ConUser.add(nome, email, senha)
     if ans == 0:

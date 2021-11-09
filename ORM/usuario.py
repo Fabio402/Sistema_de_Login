@@ -10,6 +10,6 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(100))
     name = Column(String(50))
-    password = Column(String(50))
+    password = Column(String(64))
 
 Base.metadata.create_all(engine)
